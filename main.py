@@ -31,110 +31,96 @@ except AttributeError:
 
 class menuAquisicao:  
 
-  def __init__(self, iface):
-    self.iface = iface    
-       
-  def initGui(self):
+	def __init__(self, iface):
+		self.iface = iface    
+	   
+	def initGui(self):
+		self.action = QAction(QIcon(":/plugins/menuReambulacao/icon.png"), u"Menu de Reambulação", self.iface.mainWindow())
+		self.action.setObjectName("testAction")
+		self.action.setWhatsThis("Configuration Menu plugin")
+		self.action.setStatusTip("This is status tip")
+		QObject.connect(self.action, SIGNAL("triggered()"), self.run)
+		self.iface.addToolBarIcon(self.action)
+		self.iface.addPluginToMenu(u"&Menu de Aquisição", self.action)    
+		self.iface.actionAddFeature().toggled.connect(self.desconectarMenu1)
+		self.iface.layerTreeView().clicked.connect(self.desconectarMenu1)
+		self.iface.legendInterface().itemAdded.connect(self.desconectarMenu2)
 
-    self.action = QAction(QIcon(":/plugins/menuReambulacao/icon.png"), u"Menu de Reambulação", self.iface.mainWindow())
-    self.action.setObjectName("testAction")
-    self.action.setWhatsThis("Configuration Menu plugin")
-    self.action.setStatusTip("This is status tip")
-    QObject.connect(self.action, SIGNAL("triggered()"), self.run)
-    self.iface.addToolBarIcon(self.action)
-    self.iface.addPluginToMenu(u"&Menu de Aquisição", self.action)    
-    self.iface.actionAddFeature().toggled.connect(self.desconectarMenu1)
-    self.iface.layerTreeView().clicked.connect(self.desconectarMenu1)
-    self.iface.legendInterface().itemAdded.connect(self.desconectarMenu2)
-
-  def unload(self):
-
-    self.iface.removePluginMenu(u"&Menu de Aquisição", self.action)
-    self.iface.removeToolBarIcon(self.action)
-    try:
-    	self.MainWindow.close()
-    except:
-	pass
-
-
-  def run(self):
-	try:
-		self.action.setEnabled(False)
-  		self.conectarDB()
-		self.abrirMenu()
-		
-	except:
-		QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Não conectado ao Banco de dados:<br></font><font color=blue>Tente conectar e salvar seu 'Usuário' , sua 'Senha' e a 'Máquina'!</font>", QMessageBox.Close)
-		self.action.setEnabled(True)
-		   
-  def conectarDB(self):	
+	def unload(self):	
+		self.iface.removePluginMenu(u"&Menu de Aquisição", self.action)
+		self.iface.removeToolBarIcon(self.action)
+		try:
+			self.MainWindow.close()
+		except:
+			pass
 	
-    self.s = QSettings()
-    self.s.beginGroup("PostgreSQL/connections")
-    self.a=self.s.value(u'selected')+"/host"
-    self.b=self.s.value(u'selected')+"/port"
-    self.c=self.s.value(u'selected')+"/database"
-    self.d=self.s.value(u'selected')+'/username'
-    self.e=self.s.value(u'selected')+'/password'
-    conn_string = "host="+self.s.value(self.a)+" dbname="+self.s.value(self.c)+" user="+self.s.value(self.d)+" password="+self.s.value(self.e)+" port="+self.s.value(self.b)
-    conn = psycopg2.connect(conn_string)
-    cursor = conn.cursor()
-    cursor.execute("SELECT schemaname, tablename FROM pg_tables order by schemaname;")
-    self.records = cursor.fetchall()
-    self.uri = QgsDataSourceURI()
-    self.uri.setConnection(self.s.value(self.a), self.s.value(self.b), self.s.value(self.c), self.s.value(self.d), self.s.value(self.e))
-    self.leituradb={}
-    for x in range(len(self.records)):
-			self.leituradb[self.records[x][1]]=self.records[x][0]
-    
-    cursor.execute("SELECT tablename FROM pg_tables where schemaname = 'DOMINIOS' order by schemaname;")
-    self.records2 = cursor.fetchall()
-    self.listaCampos=[]
-    for i in self.records2:
-	self.listaCampos.append(i[0])
-    self.listaValores={}
-    
-    cursor.execute("select conname from pg_constraint;")
-    self.records3 = cursor.fetchall()
-    self.listaDominios=[]
-    for nome in self.records3:
-	cursor.execute("select consrc from pg_constraint where conname = '"+nome[0]+"' ;")
-        teste = cursor.fetchall()[0][0]
-        if teste != None :
-		teste2 = teste.split(" ")[0].replace("(", "").replace("\"","")
-		if not (teste2.endswith(")") or teste2.endswith(",") or teste2.endswith("]")):
-			self.listaDominios.append(teste2)
-			
-       
-    for campo in self.listaCampos:
-	grupo=[]
-        cursor.execute("SELECT * FROM \"DOMINIOS\".\""+campo+"\";")
-	self.records4 = cursor.fetchall()
-	for vl in self.records4:
-		grupo.append(vl[1])
-	self.listaValores[campo]=grupo
-    cursor.close()
-    
-   
-  def abrirMenu(self):
-	    self.MainWindow = QtGui.QDialog(self.iface.mainWindow())
-	    self.menu = Ui_Dialog(self.MainWindow, self.iface, self.leituradb)
-	    self.menu.botaoSelecionarCsv.clicked.connect(self.selecioneCsv)   
-	    self.MainWindow.show()
-	    self.MainWindow.rejected.connect(self.sairMenu)
-		
+	
+	def run(self):
+		try:
+			self.action.setEnabled(False)
+			self.conectarDB()
+			self.abrirMenu()	
+		except:
+			QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Não conectado ao Banco de dados:<br></font><font color=blue>Tente conectar e salvar seu 'Usuário' , sua 'Senha' e a 'Máquina'!</font>", QMessageBox.Close)
+			self.action.setEnabled(True)
 
+ 	def conectarDB(self):		
+	    self.s = QSettings()
+	    self.s.beginGroup("PostgreSQL/connections")
+	    self.a=self.s.value(u'selected')+"/host"
+	    self.b=self.s.value(u'selected')+"/port"
+	    self.c=self.s.value(u'selected')+"/database"
+	    self.d=self.s.value(u'selected')+'/username'
+	    self.e=self.s.value(u'selected')+'/password'
+	    conn_string = "host="+self.s.value(self.a)+" dbname="+self.s.value(self.c)+" user="+self.s.value(self.d)+" password="+self.s.value(self.e)+" port="+self.s.value(self.b)
+	    conn = psycopg2.connect(conn_string)
+	    cursor = conn.cursor()
+	    cursor.execute("SELECT schemaname, tablename FROM pg_tables order by schemaname;")
+	    self.records = cursor.fetchall()
+	    self.uri = QgsDataSourceURI()
+	    self.uri.setConnection(self.s.value(self.a), self.s.value(self.b), self.s.value(self.c), self.s.value(self.d), self.s.value(self.e))
+	    self.leituradb={}
+	    for x in range(len(self.records)):
+			self.leituradb[self.records[x][1]]=self.records[x][0]    
+	    cursor.execute("SELECT tablename FROM pg_tables where schemaname = 'DOMINIOS' order by schemaname;")
+	    self.records2 = cursor.fetchall()
+	    self.listaCampos=[]
+	    for i in self.records2:
+			self.listaCampos.append(i[0])
+	    self.listaValores={}    
+	    cursor.execute("select conname from pg_constraint;")
+	    self.records3 = cursor.fetchall()
+	    self.listaDominios=[]
+	    for nome in self.records3:
+			cursor.execute("select consrc from pg_constraint where conname = '"+nome[0]+"' ;")
+			teste = cursor.fetchall()[0][0]
+			if teste != None :
+				teste2 = teste.split(" ")[0].replace("(", "").replace("\"","")
+				if not (teste2.endswith(")") or teste2.endswith(",") or teste2.endswith("]")):
+					self.listaDominios.append(teste2)       
+	    for campo in self.listaCampos:
+			grupo=[]
+			cursor.execute("SELECT * FROM \"DOMINIOS\".\""+campo+"\";")
+			self.records4 = cursor.fetchall()
+			for vl in self.records4:
+				grupo.append(vl[1])
+			self.listaValores[campo]=grupo
+	    cursor.close()	    
    
-  def selecioneCsv(self):
-
-	fileN = QtGui.QFileDialog(self.iface.mainWindow()).getOpenFileName()
-	if fileN[-4:] == ".csv":
-		self.lerCsv(fileN)
-		self.menu.botaoSelecionarCsv.close()
-		
-	elif (fileN[-4:] != ".csv") and (fileN[-4:] != "") :
-		
-		QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Arquivo não compatível:<br></font><font color=blue>Selecione um Arquivo com extensão '.csv'!</font>", QMessageBox.Close)
+	def abrirMenu(self):
+		self.MainWindow = QtGui.QDialog(self.iface.mainWindow())
+		self.menu = Ui_Dialog(self.MainWindow, self.iface, self.leituradb)
+		self.menu.botaoSelecionarCsv.clicked.connect(self.selecioneCsv)   
+		self.MainWindow.show()
+		self.MainWindow.rejected.connect(self.sairMenu)
+   
+	def selecioneCsv(self):
+		fileN = QtGui.QFileDialog(self.iface.mainWindow()).getOpenFileName()
+		if fileN[-4:] == ".csv":
+			self.lerCsv(fileN)
+			self.menu.botaoSelecionarCsv.close()		
+		elif (fileN[-4:] != ".csv") and (fileN[-4:] != "") :		
+			QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Arquivo não compatível:<br></font><font color=blue>Selecione um Arquivo com extensão '.csv'!</font>", QMessageBox.Close)
 
   def sairMenu(self):
 	if self.iface.activeLayer():
