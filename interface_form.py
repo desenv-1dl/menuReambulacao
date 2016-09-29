@@ -48,7 +48,6 @@ class Dialog(object):
 		Dialog.setWindowTitle(_translate("Dialog", self.iface.activeLayer().name(), None))        	
 
 	def criarCombo(self, nome, mapaValor, padrao=None):
-		#print mapaValor, nome
 		horizontalLayout_3 = QtGui.QHBoxLayout()
 		horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
 		label_2 = QtGui.QLabel(self.Dialog)
@@ -80,8 +79,7 @@ class Dialog(object):
 		valorC(unicode(combo.currentText()))
 		QObject.connect(combo, QtCore.SIGNAL("activated(const QString&)"), valorC)
 
-	def criarLine(self, nome, tipo, padrao=None): 
-		   
+	def criarLine(self, nome, tipo, padrao=None):		   
 		horizontalLayout_2 = QtGui.QHBoxLayout()
 		horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
 		label = QtGui.QLabel(self.Dialog)
@@ -93,52 +91,48 @@ class Dialog(object):
 		lineEdit.setObjectName(_fromUtf8(nome+"LE"))
 		horizontalLayout_2.addWidget(lineEdit)	
 		self.verticalLayout.addLayout(horizontalLayout_2)
-		label.setText(_translate("Dialog", nome, None))
-                
+		label.setText(_translate("Dialog", nome, None))                
 		if padrao != None:
-                        if (not padrao[0] == "NULL") and (not padrao[0] == None) and (not padrao[0] == 'None' ):
-                                
-                                lineEdit.setText(padrao[0])
-                                
-                self.valorLine(lineEdit, tipo)         
+			if (not padrao[0] == "NULL") and (not padrao[0] == None) and (not padrao[0] == 'None' ):
+				lineEdit.setText(padrao[0])
+		self.valorLine(lineEdit, tipo)         
 
 	def valorLine(self, line, tp):
 		tipagem=tp
 		def valorL(item):
 			if tipagem == "float4":
-			  if (item != "") :						
-			    try:
-			      self.formV[unicode(line.objectName())]=float(item)
-			    except:
+				if (item != "") :						
+					try:
+						self.formV[unicode(line.objectName())]=float(item)
+					except:
 						line.clear()
 						QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Campo só recebe valores 'Float'!</font>", QMessageBox.Close)
-			  else:
+				else:
 					self.formV[unicode(line.objectName())]=None
 	
 			elif tipagem == "varchar":
-			  if item != "":	
-			    try:
+				if item != "":	
+					try:
 						self.formV[unicode(line.objectName())]=unicode(item)
-			    except:
+					except:
 						line.clear()
 						QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Campo só recebe valores 'Varchar'!</font>", QMessageBox.Close)
-			  else:
+				else:
 					self.formV[unicode(line.objectName())]=None
 
 			elif tipagem == "int2":
-			  if item != "":
-			    try:
+				if item != "":
+					try:
 						self.formV[unicode(line.objectName())]=int(item)
-			    except:
+					except:
 						line.clear()
 						QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Campo só recebe valores 'Int'!</font>", QMessageBox.Close)
-			  else:
+				else:
 					self.formV[unicode(line.objectName())]=None
 			else:
 			  QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Formato não relacionado!</font>", QMessageBox.Close)
 		if not line.text() == None:
 			self.formV[unicode(line.objectName())]=line.text()
-
 		line.textEdited.connect(valorL)	
 
 	def criarBotoes(self):
@@ -170,48 +164,40 @@ class Dialog(object):
 		for x in self.iface.activeLayer().pendingAllAttributesList():	
 			grupoType[self.iface.activeLayer().pendingFields()[x].name()]=self.iface.activeLayer().pendingFields()[x].typeName()	
 		for index in self.iface.activeLayer().pendingAllAttributesList():
-			
 			if not index == 0:
-
 				try:
-			  		if self.iface.activeLayer().valueMap(index).keys()[0] != "UseHtml":
-				  	  if self.iface.activeLayer().pendingFields()[index].name() in self.atributagem[botao][self.iface.activeLayer().name()].keys():
-				      		self.criarCombo(unicode(self.iface.activeLayer().pendingFields()[index].name()), self.iface.activeLayer().valueMap(index), self.atributagem[botao][self.iface.activeLayer().name()].get(self.iface.activeLayer().pendingFields()[index].name()))
-						
-				    	  else:
-				      		self.criarCombo(unicode(self.iface.activeLayer().pendingFields()[index].name()), self.iface.activeLayer().valueMap(index), None)
-						
-				  	else:
-					   padrao = self.atributagem[botao][self.iface.activeLayer().name()].get(self.iface.activeLayer().pendingFields()[index].name())
-				    	   self.criarLine(unicode(self.iface.activeLayer().pendingFields()[index].name()), grupoType.get(unicode(self.iface.activeLayer().pendingFields()[index].name())), padrao)
-					   
+					if self.iface.activeLayer().valueMap(index).keys()[0] != "UseHtml":
+						if self.iface.activeLayer().pendingFields()[index].name() in self.atributagem[botao][self.iface.activeLayer().name()].keys():
+							self.criarCombo(unicode(self.iface.activeLayer().pendingFields()[index].name()), self.iface.activeLayer().valueMap(index), self.atributagem[botao][self.iface.activeLayer().name()].get(self.iface.activeLayer().pendingFields()[index].name()))
+						else:
+							self.criarCombo(unicode(self.iface.activeLayer().pendingFields()[index].name()), self.iface.activeLayer().valueMap(index), None)
+					else:
+						padrao = self.atributagem[botao][self.iface.activeLayer().name()].get(self.iface.activeLayer().pendingFields()[index].name())
+						self.criarLine(unicode(self.iface.activeLayer().pendingFields()[index].name()), grupoType.get(unicode(self.iface.activeLayer().pendingFields()[index].name())), padrao)
 				except:
-				        padrao = self.atributagem[botao][self.iface.activeLayer().name()].get(self.iface.activeLayer().pendingFields()[index].name())
-			  		self.criarLine(unicode(self.iface.activeLayer().pendingFields()[index].name()), grupoType.get(unicode(self.iface.activeLayer().pendingFields()[index].name())), padrao)
+					padrao = self.atributagem[botao][self.iface.activeLayer().name()].get(self.iface.activeLayer().pendingFields()[index].name())
+					self.criarLine(unicode(self.iface.activeLayer().pendingFields()[index].name()), grupoType.get(unicode(self.iface.activeLayer().pendingFields()[index].name())), padrao)
 
 	def valorCampos(self, i, valores, dialogo):
-		
 		formV=valores
 		idt=int(i)
 		dialogo.accept()
 		grupoAttr={}
 		for x in self.iface.activeLayer().pendingAllAttributesList():	
-			 grupoAttr[self.iface.activeLayer().pendingFields()[x].name()]=x				
+			grupoAttr[self.iface.activeLayer().pendingFields()[x].name()]=x				
 		for campo in formV.keys():
 			if (campo[:-2] in grupoAttr) :
 				if unicode(campo[-2:]) == u"LE":
-                                                if formV.get(campo) == u'':
-                                                        idx = self.iface.activeLayer().fieldNameIndex(unicode(campo[:-2]))						
-                                                        self.iface.activeLayer().changeAttributeValue(int(idt) , idx, None)
-                                                else:
-                                                        idx = self.iface.activeLayer().fieldNameIndex(unicode(campo[:-2]))						
-                                                        self.iface.activeLayer().changeAttributeValue(int(idt) , idx, formV.get(campo))								
+					if formV.get(campo) == u'':
+						idx = self.iface.activeLayer().fieldNameIndex(unicode(campo[:-2]))						
+						self.iface.activeLayer().changeAttributeValue(int(idt) , idx, None)
+					else:
+						idx = self.iface.activeLayer().fieldNameIndex(unicode(campo[:-2]))						
+						self.iface.activeLayer().changeAttributeValue(int(idt) , idx, formV.get(campo))								
 				else:					
 					idx2 = self.iface.activeLayer().fieldNameIndex(unicode(campo[:-2]))
-				    	self.iface.activeLayer().changeAttributeValue(int(idt) , idx2, self.iface.activeLayer().valueMap(grupoAttr.get(unicode(campo[:-2]))).setdefault(unicode(formV.get(campo))))
-	
+					self.iface.activeLayer().changeAttributeValue(int(idt) , idx2, self.iface.activeLayer().valueMap(grupoAttr.get(unicode(campo[:-2]))).setdefault(unicode(formV.get(campo))))
 		self.removeSelecoes()
-		#self.iface.actionSaveActiveLayerEdits().trigger()
 	
 	def removeSelecoes(self):
 		for i in range(len(self.iface.mapCanvas().layers())):
@@ -219,7 +205,7 @@ class Dialog(object):
 				self.iface.mapCanvas().layers()[i].removeSelection()
 			except:
 				pass
-
+		
 	
 
 

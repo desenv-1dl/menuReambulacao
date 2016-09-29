@@ -27,11 +27,11 @@ except AttributeError:
 
 class Ui_Backup(object):
     def __init__(self, Dialog, iface):
-	self.iface=iface
-	self.Dialog=Dialog
+        self.iface=iface
+        self.Dialog=Dialog
         self.Dialog.setObjectName(_fromUtf8("Dialog"))
         self.Dialog.setStyleSheet(_fromUtf8("background-color: rgb(205,205,205);"))
-	self.verticalLayout = QtGui.QVBoxLayout(self.Dialog)
+        self.verticalLayout = QtGui.QVBoxLayout(self.Dialog)
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))        
         self.label = QtGui.QLabel(self.Dialog)
         self.label.setObjectName(_fromUtf8("label"))
@@ -39,7 +39,7 @@ class Ui_Backup(object):
         self.pushButton_3 = QtGui.QPushButton(self.Dialog)
         self.pushButton_3.setObjectName(_fromUtf8("pushButton_3"))
         self.verticalLayout.addWidget(self.pushButton_3)
-	self.pushButton_3.clicked.connect(self.backup)
+        self.pushButton_3.clicked.connect(self.backup)
         self.retranslateUi(self.Dialog)
         QtCore.QMetaObject.connectSlotsByName(self.Dialog)
 
@@ -57,7 +57,6 @@ class Ui_Backup(object):
 		    self.b=self.s.value(u'selected')+"/port"
 		    self.d=self.s.value(u'selected')+'/username'
 		    self.e=self.s.value(u'selected')+'/password'
-
 		    db = str(self.s.value(u'selected'))
 		    user=str(self.s.value(self.d))
 		    backupdir=str(self.filename)
@@ -66,13 +65,12 @@ class Ui_Backup(object):
 		    	print backupdir
 		    	print date
 		    os.popen("pg_dump -U%s -d%s > %s" % (user , db, backupdir))
-		    #self.feito()
 	    except:
-	   	QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Erro ao realizar o 'BACKUP'!</font>", QMessageBox.Close)
+	   	       QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Erro ao realizar o 'BACKUP'!</font>", QMessageBox.Close)
 
     def feito(self):
-	QMessageBox.information(self.iface.mainWindow(), u"INFORMAÇÃO:", u"<font color=green>'BACKUP' realizado com sucesso!</font>", QMessageBox.Close)
-	self.Dialog.close()
+    	QMessageBox.information(self.iface.mainWindow(), u"INFORMAÇÃO:", u"<font color=green>'BACKUP' realizado com sucesso!</font>", QMessageBox.Close)
+    	self.Dialog.close()
 
 
 

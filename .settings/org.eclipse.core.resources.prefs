@@ -5,3 +5,4 @@ encoding/interface_backup.py=utf-8
 encoding/interface_form.py=utf-8
 encoding/interface_menu.py=utf-8
 encoding/main.py=utf-8
+encoding/selectConnection.py=utf-8
