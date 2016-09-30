@@ -24,11 +24,11 @@ class MultiLayerSelection(QgsMapTool):
 		contador=0
 		selecionado = self.iface.mapCanvas().layers()
 		for x in range(len(selecionado)):
-				try:
-					if self.iface.mapCanvas().layers()[x].selectedFeatureCount() > 0 :
-						contador+=1
-				except:
-					pass
+			try:
+				if self.iface.mapCanvas().layers()[x].selectedFeatureCount() > 0 :
+					contador+=1
+			except:
+				pass
 		if contador == 0:
 			self.selecaoVariada=[]
 			self.testeGeom=""		
@@ -43,7 +43,7 @@ class MultiLayerSelection(QgsMapTool):
 		for layer in layers:
 			if layer.type() == QgsMapLayer.RasterLayer:
 				continue
-			elif (self.testeGeom != "") and (self.testeGeom == layer.name()[-1:]):
+			if (self.testeGeom != "") and (self.testeGeom == layer.name()[-1:]):
 				lRect = self.canvas.mapSettings().mapToLayerCoordinates(layer, rect)			   
 				layer.select(lRect, False)
 				if layer.selectedFeatureCount() == 1 and (not layer.name() in self.selecaoVariada):#                
@@ -51,17 +51,19 @@ class MultiLayerSelection(QgsMapTool):
 					self.iface.setActiveLayer(grupo.get(layer.name()))
 					self.iface.activeLayer().startEditing()		
                                                                         
-			elif (self.testeGeom == "") and (layer.name()[-1:]== "P" or layer.name()[-1:]== "A" or layer.name()[-1:]=="L" or layer.name()[-1:]=="C" or layer.name()[-1:]=="D"):
+			elif (self.testeGeom == "") and (layer.name()[-1:]== "P" or \
+					layer.name()[-1:]== "A" or layer.name()[-1:]=="L" or layer.name()[-1:]=="C" or layer.name()[-1:]=="D"):
 				lRect = self.canvas.mapSettings().mapToLayerCoordinates(layer, rect)			   
-		        layer.select(lRect, False)				
-		        if layer.selectedFeatureCount() == 1 and (not layer.name() in self.selecaoVariada):
+				layer.select(lRect, False)				
+				if layer.selectedFeatureCount() == 1 and (not layer.name() in self.selecaoVariada):
 					self.testeGeom=layer.name()[-1:]				
 					self.selecaoVariada.append(layer.name())
 					self.iface.setActiveLayer(grupo.get(layer.name()))
 					self.iface.activeLayer().startEditing()
 		maisDeUm = 0
 		for layer in layers:		
-			if (layer.name()[-1:]== "P" or layer.name()[-1:]== "A" or layer.name()[-1:]=="L" or layer.name()[-1:]=="C" or layer.name()[-1:]=="D"):
+			if (layer.name()[-1:]== "P" or layer.name()[-1:]== "A" or \
+				layer.name()[-1:]=="L" or layer.name()[-1:]=="C" or layer.name()[-1:]=="D"):
 				if len(layer.selectedFeatures()) > 1:
 					layer.removeSelection()
 				if len(layer.selectedFeatures()) == 1:
