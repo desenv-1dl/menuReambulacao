@@ -50,7 +50,6 @@ class MultiLayerSelection(QgsMapTool):
 					self.selecaoVariada.append(layer.name())
 					self.iface.setActiveLayer(grupo.get(layer.name()))
 					self.iface.activeLayer().startEditing()		
-                                                                        
 			elif (self.testeGeom == "") and (layer.name()[-1:]== "P" or \
 					layer.name()[-1:]== "A" or layer.name()[-1:]=="L" or layer.name()[-1:]=="C" or layer.name()[-1:]=="D"):
 				lRect = self.canvas.mapSettings().mapToLayerCoordinates(layer, rect)			   

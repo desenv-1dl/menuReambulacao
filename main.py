@@ -28,6 +28,7 @@ class menuAquisicao:
 		self.iface.actionAddFeature().toggled.connect(self.desconectarMenu1)
 		self.iface.layerTreeView().clicked.connect(self.desconectarMenu1)
 		self.iface.legendInterface().itemAdded.connect(self.desconectarMenu2)
+		self.styles={}
 
 	def unload(self):	
 		self.iface.removePluginMenu(u"&Menu de Aquisição", self.action)
@@ -57,15 +58,16 @@ class menuAquisicao:
 			QMessageBox.warning(self.iface.mainWindow(),"ERRO", u"Erro ao ler 'Conexões'")
 		
 	def run(self, c, d):
-		#try:
+		try:
 			db = c.listConCombo.currentText().replace(" ","")
 			d.close()
 			self.action.setEnabled(False)
 			self.conectarDB(db)
 			self.abrirMenu(db)	
-		#except:
-			#QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Não conectado ao Banco de dados:<br></font><font color=blue>Tente conectar e salvar seu 'Usuário' , sua 'Senha' e a 'Máquina'!</font>", QMessageBox.Close)
-			#self.action.setEnabled(True)
+		except:
+			QMessageBox.warning(self.iface.mainWindow(), u"ERRO:", u"<font color=red>Não conectado ao Banco de dados:<br></font><font color=blue>Tente conectar e salvar seu 'Usuário' , sua 'Senha' e a 'Máquina'!</font>", QMessageBox.Close)
+			self.action.setEnabled(True)
+	
 
  	def conectarDB(self, db):		
 	    self.s = QSettings()
@@ -75,7 +77,7 @@ class menuAquisicao:
 	    self.c=db+"/database"
 	    self.d=db+'/username'
 	    self.e=db+'/password'
-	    self.dataBase = db
+	    self.dataBase = self.s.value(self.c)
 	    conn_string = "host="+self.s.value(self.a)+" dbname="+self.s.value(self.c)+" user="+self.s.value(self.d)+" password="+self.s.value(self.e)+" port="+self.s.value(self.b)
 	    conn = psycopg2.connect(conn_string)
 	    cursor = conn.cursor()
@@ -109,7 +111,15 @@ class menuAquisicao:
 			for vl in self.records4:
 				grupo.append(vl[1])
 			self.listaValores[campo]=grupo
-	    cursor.close()	    
+            cursor.execute("select id, stylename from layer_styles;")
+	    for valores in cursor.fetchall():
+	    		self.styles[valores[1]] = valores[0]
+	    cursor.close()
+			
+			
+			
+        
+  
    
 	def abrirMenu(self, db):
 		self.MainWindow = QtGui.QDialog(self.iface.mainWindow())
@@ -182,12 +192,12 @@ class menuAquisicao:
 							index+=1							
 						elif len(linha[index].split(":")) == 2:
 							self.atributagem[nomeBot][nomeCamada][campo]=[valor1]
-							index+=1							                       	
-				conjuntoCategorias.append(self.leituradb.get(nomeCamada))
+							index+=1
+				if (not self.leituradb.get(nomeCamada) in conjuntoCategorias):							                       	
+					conjuntoCategorias.append(self.leituradb.get(nomeCamada))
 				conjuntoBotaoFeicao.append([nomeBot, nomeCamada, campo, valor1])			
 				linhaCsv+=1
-		conjuntoCategoria = list(set(conjuntoCategorias))
-		self.menu.criarTab(conjuntoCategoria)		
+		self.menu.criarTab(conjuntoCategorias)		
 		for botaofeicao in conjuntoBotaoFeicao:		
 			bot = self.menu.criarBotao(botaofeicao[0], botaofeicao[1])
 			bot.clicked.connect(self.definirAcao)	
@@ -258,7 +268,10 @@ class menuAquisicao:
 		 	vlayer = QgsVectorLayer(self.uri.uri(), str(camada), "postgres")
 			QgsMapLayerRegistry.instance().addMapLayer(vlayer)
 			self.iface.activeLayer().startEditing()
-			self.iface.activeLayer().loadDefaultStyle()
+			estilo_camada="reambulacao_"+self.iface.activeLayer().name()
+			x= self.iface.activeLayer().getStyleFromDatabase(str(self.styles.get(estilo_camada)), "Estilo não encontrado")
+			self.iface.activeLayer().applyNamedStyle(x)
+			#self.iface.activeLayer().loadDefaultStyle()
 			self.iface.actionAddFeature().trigger()
 			self.iface.activeLayer().setFeatureFormSuppress(True)
 			self.botao1=botao
