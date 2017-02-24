@@ -42,7 +42,7 @@ class menuAquisicao:
 		dialog = QtGui.QDialog(self.iface.mainWindow())
 		d = SelectConnection(dialog)
 		self.addCon(d)
-		d.okButton.clicked.connect(lambda:self.run(d, dialog))
+		d.okButton.clicked.connect(lambda: self.run(d, dialog))
 		dialog.show()
 	
 	def addCon(self, d):
@@ -115,13 +115,12 @@ class menuAquisicao:
 	    for valores in cursor.fetchall():
 	    		self.styles[valores[1]] = valores[0]
 	    cursor.close()
-			
-			
-			
-        
-  
-   
+
+	def createFile(self):
+		open(os.path.join(os.path.dirname(__file__), 'notsave'), 'a').close()
+		
 	def abrirMenu(self, db):
+		self.createFile()
 		self.MainWindow = QtGui.QDialog(self.iface.mainWindow())
 		self.menu = Ui_Dialog(self.MainWindow, self.iface, self.leituradb, db)
 		self.menu.botaoSelecionarCsv.clicked.connect(self.selecioneCsv)   
@@ -148,6 +147,7 @@ class menuAquisicao:
 		except:
 			pass
 		self.action.setEnabled(True)
+		os.remove(os.path.join(os.path.dirname(__file__), 'notsave'))
 
   	def desconectarMenu1(self):
 		try:
@@ -193,9 +193,10 @@ class menuAquisicao:
 						elif len(linha[index].split(":")) == 2:
 							self.atributagem[nomeBot][nomeCamada][campo]=[valor1]
 							index+=1
-				if (not self.leituradb.get(nomeCamada) in conjuntoCategorias):							                       	
+				if (self.leituradb.get(nomeCamada)) and (not self.leituradb.get(nomeCamada) in conjuntoCategorias):							                       	
 					conjuntoCategorias.append(self.leituradb.get(nomeCamada))
-				conjuntoBotaoFeicao.append([nomeBot, nomeCamada, campo, valor1])			
+				if (self.leituradb.get(nomeCamada)):
+					conjuntoBotaoFeicao.append([nomeBot, nomeCamada, campo, valor1])			
 				linhaCsv+=1
 		self.menu.criarTab(conjuntoCategorias)		
 		for botaofeicao in conjuntoBotaoFeicao:		
@@ -268,10 +269,10 @@ class menuAquisicao:
 		 	vlayer = QgsVectorLayer(self.uri.uri(), str(camada), "postgres")
 			QgsMapLayerRegistry.instance().addMapLayer(vlayer)
 			self.iface.activeLayer().startEditing()
+			self.iface.activeLayer().loadDefaultStyle()
 			estilo_camada="reambulacao_"+self.iface.activeLayer().name()
 			x= self.iface.activeLayer().getStyleFromDatabase(str(self.styles.get(estilo_camada)), "Estilo não encontrado")
 			self.iface.activeLayer().applyNamedStyle(x)
-			#self.iface.activeLayer().loadDefaultStyle()
 			self.iface.actionAddFeature().trigger()
 			self.iface.activeLayer().setFeatureFormSuppress(True)
 			self.botao1=botao
@@ -381,6 +382,7 @@ class menuAquisicao:
 					idx2 = self.iface.activeLayer().fieldNameIndex(unicode(campo[:-2]))
 					self.iface.activeLayer().changeAttributeValue(idt , idx2, self.iface.activeLayer().valueMap(grupoAttr.get(unicode(campo[:-2]))).setdefault(unicode(self.valor.get(campo))))
 		self.iface.activeLayer().featureAdded.disconnect(self.atributar)
+		self.iface.mapCanvas().refresh()
 
 	def fechar(self, ID):
 		self.removeSelecoes()		
